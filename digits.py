@@ -3,24 +3,7 @@
 import pickle
 import numpy as np
 import matplotlib
-
-
-
-def cf(x,y):
-    ''' This is the negative log probabability 
-        cost function for the nerual network 
-        
-        :param w: weight vector for each element 1xn , use all 1 if no weight
-        :param y: y value to train against, should be 1xn array
-        
-        :returns: negative log cost fuction output
-        
-        TODO:
-            none, done
-        '''
-    a = -sum(y * np.log(softmax(x)))
     
-
 def calculateOutput(weights, x):
     ''' This funciton calcuate the output of the nerual nerwork given weights and
         an input. The nerual net is fully connected and each weight corrosponde
@@ -41,23 +24,6 @@ def calculateOutput(weights, x):
     # NOTE: this returns the row of the result, not too sure if we want this
     return softmax(out)
     
-def part2():
-    ''' This is the function to run part 2 of the assignment
-        
-        :no params:
-        
-        :returns: nerual net output, though a softmax normalization
-        
-        TODO:
-            none, done
-
-        '''
-    
-    np.random.seed(0)
-    weights = 2*np.random.random((785, 10))-1
-    x = np.random.random((1, 784))
-    print(calculateOutput(weights, x))
-    
 def softmax(in_array):
     ''' This fuction computes the softmax probability of a input array
         
@@ -70,6 +36,44 @@ def softmax(in_array):
         '''
     den = sum(np.exp(in_array)
     return in_array / den
+
+def part2():
+    ''' This is the function to run part 2 of the assignment
+        
+        :no params:
+        
+        :returns: nerual net output, though a softmax normalization
+        
+        TODO:
+            none, done
+
+        '''
+        
+    np.random.seed(0)
+    weights = 2*np.random.random((785, 10))-1
+    x = np.random.random((1, 784))
+    print(calculateOutput(weights, x))
+
+
+def cf(x,y):
+    # Part 3, neglog prob
+    ''' This is the negative log probabability 
+        cost function for the nerual network 
+        
+        :param w: weight vector for each element 1xn , use all 1 if no weight
+        :param y: y value to train against, should be 1xn array
+        
+        :returns: negative log cost fuction output
+        
+        TODO:
+            none, done
+        '''
+    a = -sum(y * np.log(softmax(x)))
+    
+
+
+    
+
     
     
 if __name__ = __main__:
