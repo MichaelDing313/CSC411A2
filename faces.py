@@ -483,7 +483,7 @@ if __name__ == "__main__":
     y_ = tf.placeholder(tf.float32, [None, 6])
     
 
-    lam = 0.00000
+    lam = 0.001
     decay_penalty =lam*tf.reduce_sum(tf.square(W0))+lam*tf.reduce_sum(tf.square(W1))
     reg_NLL = -tf.reduce_sum(y_*tf.log(y))+decay_penalty    
     train_step = tf.train.AdamOptimizer(0.0005).minimize(reg_NLL)
@@ -504,7 +504,7 @@ if __name__ == "__main__":
     plot_train = []
     plot_vali = []
     
-    for i in range(50000):
+    for i in range(5000):
         #print i  
         #batch_xs, batch_ys = get_train_batch(M, 500)
         sess.run(train_step, feed_dict={x: train_x, y_: train_y})
@@ -527,9 +527,18 @@ if __name__ == "__main__":
             snapshot["W1"] = sess.run(W1)
             snapshot["b0"] = sess.run(b0)
             snapshot["b1"] = sess.run(b1)
-            cPickle.dump(snapshot,  open("new_snapshot"+str(i)+".pkl", "w"))
+            #cPickle.dump(snapshot,  open("new_snapshot"+str(i)+".pkl", "w"))
             
     try:
+        plt.figure()
+        plt.plot(plot_x, plot_train, '-g', label='Training')
+        plt.plot(plot_x, plot_vali, '-r', label='Validation')
+        plt.plot(plot_x, plot_test, '-b', label='Test')
+        plt.xlabel("Training Iterations")
+        plt.ylabel("Accuracy")
+        plt.title("Traning Curve for Single Hidden Layer NN")
+        plt.legend(loc='bottom right')
+        plt.show()
     except:
         print("plot fail")
 
