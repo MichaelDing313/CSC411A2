@@ -199,14 +199,19 @@ def initFC0L(num_inputs,num_outputs): # Initialize Fully Connected NN with 0 hid
     ''' This function initializes a fully connected network with no hidden layers
         (as per the network pictured for part 2 and 3)
         
-        :param num_inputs: weight matrix of the inputs, dimension lenb(x) by len(o)
-        :param num_outputs: every input to the nerual net
+        :param num_inputs:      size of the network, in this case N
+        :param num_outputs:     output size of the network, in this case 10
         
-        :returns: nerual net output, though a softmax normalization
+        :returns:               nerual net object, array of weights and bias
         
         TODO:
             none, done
+
     '''
+
+    W = 0.01 * np.random.randn(num_inputs, num_outputs)
+    b = np.zeros((num_outputs, 1))
+    return W,b
 
 def TrainNN_softmax(M, EPS):    
     train_inputs, train_targets, test_inputs, test_targets = make_set(M, 100, 50)
@@ -282,11 +287,13 @@ def p3b(M, i_list=[210, 320], j_list=[2,6]):
         for j in j_list:
             part3b_check_gradient_finite_diff(forwardPropagation,part3_gradient,part2_cost_function,train_targets, train_inputs, w,b,0.000001,i,j)  
             
-def p4(M):
+def p4(M, input, output):
+    nnet = initFC0L(num_inputs,num_outputs);
+    
     
 
-if __name__ = __main__:
-print("\n--------------\n    PART 4\n--------------")
+if __name__ == __main__:
+    print("\n--------------\n    PART 4\n--------------")
 
 
 
