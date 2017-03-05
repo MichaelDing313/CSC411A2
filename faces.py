@@ -47,7 +47,7 @@ def log_event(log_string, level):
     # instead of printing full message.
     # Log level 1 allow full message when "ALL" and dot output when "SHORT"
     if (log_lvl_local == 1 and level == 1):
-        print ('.', end = "")
+        print '.' ,
     else:
         print(log_string)
         
@@ -113,12 +113,12 @@ def fetch_image_URL_mod(actor_list, output_folder, source_list, output_list):
                     log_event(" Skip - Image Invalid ",3)
                     continue
                     
-                import pdb; pdb.set_trace()
+                #import pdb; pdb.set_trace()
                 # Check if the downloaded image matches the checksum
                 f = open(output_folder+filename, "rb")
                 buf = f.read()
                 f.close()
-                if (hashlib.sha224(buf).hexdigest() == line.split()[6]):
+                if (hashlib.sha256(buf).hexdigest() != line.split()[6]):
                     log_event(" Skip - Bad Hash ",3)
                     try:
                         os.remove(output_folder+filename)
