@@ -2,18 +2,24 @@ from pylab import *
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cbook as cbook
+import random
 import time
 from scipy.misc import imread
 from scipy.misc import imresize
+from scipy.misc import imsave
+import scipy
 import matplotlib.image as mpimg
+from matplotlib.pyplot import *
+import os
 from scipy.ndimage import filters
 import urllib
-from numpy import random
+import imghdr
+import shutil
 
-import cPickle
 
 import os
 from scipy.io import loadmat
+import pickle
 
 #Load the MNIST digit data
 M = loadmat("mnist_all.mat")
@@ -23,11 +29,14 @@ imshow(M["train5"][150].reshape((28,28)), cmap=cm.gray)
 show()
 
 
-def softmax(y):
-    '''Return the output of the softmax function for the matrix of output y. y
-    is an NxM matrix where N is the number of outputs for a single case, and M
-    is the number of cases'''
-    return exp(y)/tile(sum(exp(y),0), (len(y),1))
+# def softmax(y):
+#     '''Return the output of the softmax function for the matrix of output y. y
+#     is an NxM matrix where N is the number of outputs for a single case, and M
+#     is the number of cases'''
+#     return exp(y)/tile(sum(exp(y),0), (len(y),1))
+
+def softmax(x):
+    return np.exp(x) / np.sum(np.exp(x))
     
 def tanh_layer(y, W, b):    
     '''Return the output of a tanh layer for the input matrix y. y
@@ -52,7 +61,7 @@ def deriv_multilayer(W0, b0, W1, b1, x, L0, L1, y, y_):
     
 
 #Load sample weights for the multilayer neural network
-snapshot = cPickle.load(open("snapshot50.pkl"))
+snapshot = pickle.load(open("snapshot50.pkl"))
 W0 = snapshot["W0"]
 b0 = snapshot["b0"].reshape((300,1))
 W1 = snapshot["W1"]
