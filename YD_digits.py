@@ -291,10 +291,15 @@ def p4(M, input, output):
     nnet = initFC0L(num_inputs,num_outputs);
     
     
+    
+
+    
 
 if __name__ == __main__:
     print("\n--------------\n    PART 4\n--------------")
 
+
+    print("\n--------------\n    PART 5\n--------------")
 
 
 
