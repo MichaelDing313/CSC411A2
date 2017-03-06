@@ -424,8 +424,8 @@ def p7_8(act_set, af, lam = 0.0, iter = 5000, nhid = 360):
     W0 = tf.Variable(tf.random_normal([1024, nhid], stddev=0.0001, seed=411))
     b0 = tf.Variable(tf.random_normal([nhid], stddev=0.0001, seed=411))
     
-    W1 = tf.Variable(tf.random_normal([nhid, 6], stddev=0.0001))
-    b1 = tf.Variable(tf.random_normal([6], stddev=0.0001))
+    W1 = tf.Variable(tf.random_normal([nhid, 6], stddev=0.0001, seed=411))
+    b1 = tf.Variable(tf.random_normal([6], stddev=0.0001, seed=411))
     
     # snapshot = cPickle.load(open("snapshot50.pkl"))
     # W0 = tf.Variable(snapshot["W0"])
@@ -515,7 +515,7 @@ def p7_8(act_set, af, lam = 0.0, iter = 5000, nhid = 360):
     return sess, W0, b0, W1, b1
         
         
-def p9(act_set, actors):    
+def p9(act_set, avg_size = 10):    
     
     # Train and save network from part 7
     sess, W0t, b0t, W1t, b1t = p7_8(act_set, "sigmoid", 0.1, 2000, 360)
@@ -527,7 +527,6 @@ def p9(act_set, actors):
     
     w_out = []
     
-    avg_size = 10
     for i in range(6):
         # Loop through each actor
         wh = W1.T[i]  # Hidden unit weights that contribute to this actor
@@ -630,7 +629,8 @@ if __name__ == "__main__":
     # p7_8(act_set, "relu", 6.67, 3000, 360)     
     # p7_8(act_set, "relu", 10, 3000, 360)  
     # 
-    p9(act_set, 0);
+    p9(act_set);
+    p9(act_set,1);
     
         
     
