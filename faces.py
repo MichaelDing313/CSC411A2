@@ -395,7 +395,135 @@ def get_test(id):
     
     return train_x, train_y.T
         
+def p7_8(act_set, af, lam = 0.0, iter = 5000, nhid = 360):
+    ''' This is the modifed guerzhoian function to nerual net
     
+        :param act_set:  input actor set, in the format:    
+                        [   [[actor_name],[Traning_set],[validation_set],[test_set]], 
+                        [[actor_name],[Traning_set],[validation_set],[test_set]], 
+                        [...] ]                        
+        :param af:      activatoin function to use, "sigmoid" or "relu"
+        :param lam:     regularization factor lambda
+        :param iter:    iterations to run
+        :param nhid:    number of hidden units
+        
+        
+        :returns:   sess, W0, b0, W1, b1  these are the nerual net weights and session
+                    to be used outside the funtion to calculate the net
+    
+    '''
+    # Changes:
+    #     input image size is 1024
+    #     training everything in one batch since the training set is realtively small
+        
+        
+    x = tf.placeholder(tf.float32, [None, 1024])
+    
+    
+    #nhid = 50
+    W0 = tf.Variable(tf.random_normal([1024, nhid], stddev=0.0001, seed=411))
+    b0 = tf.Variable(tf.random_normal([nhid], stddev=0.0001, seed=411))
+    
+    W1 = tf.Variable(tf.random_normal([nhid, 6], stddev=0.0001))
+    b1 = tf.Variable(tf.random_normal([6], stddev=0.0001))
+    
+    # snapshot = cPickle.load(open("snapshot50.pkl"))
+    # W0 = tf.Variable(snapshot["W0"])
+    # b0 = tf.Variable(snapshot["b0"])
+    # W1 = tf.Variable(snapshot["W1"])
+    # b1 = tf.Variable(snapshot["b1"])
+    
+    if af == "relu":
+        layer1 = tf.nn.relu(tf.matmul(x, W0)+b0)
+    elif af == "sigmoid":
+        layer1 = tf.nn.sigmoid(tf.matmul(x, W0)+b0)
+    else:
+        print("Bad activation functoin input, defaulting to sig")
+        layer1 = tf.nn.sigmoid(tf.matmul(x, W0)+b0)
+        
+
+    layer2 = tf.matmul(layer1, W1)+b1
+    
+    
+    y = tf.nn.softmax(layer2)
+    y_ = tf.placeholder(tf.float32, [None, 6])
+    
+
+    #lam = 0.0#10#0.0005
+    decay_penalty =lam*tf.reduce_sum(tf.square(W0))+lam*tf.reduce_sum(tf.square(W1))
+    reg_NLL = -tf.reduce_sum(y_*tf.log(y))+decay_penalty    
+    train_step = tf.train.AdamOptimizer(5e-5).minimize(reg_NLL)
+    
+    init = tf.initialize_all_variables()
+    sess = tf.Session()
+    sess.run(init)
+    
+    correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    
+    train_x, train_y = get_train(act_set)
+    vali_x, vali_y = get_vali(act_set)
+    test_x, test_y = get_test(act_set)
+    
+    plot_x = []
+    plot_test = []
+    plot_train = []
+    plot_vali = []
+    
+    for i in range(iter):
+        #print i  
+        #batch_xs, batch_ys = get_train_batch(M, 500)
+        sess.run(train_step, feed_dict={x: train_x, y_: train_y})
+        
+        if i % 1 == 0:
+            plot_test.append(sess.run(accuracy, feed_dict={x: test_x, y_: test_y}))
+            plot_train.append(sess.run(accuracy, feed_dict={x: train_x, y_: train_y}))
+            plot_vali.append(sess.run(accuracy, feed_dict={x: vali_x, y_: vali_y}))
+            plot_x.append(i)
+        
+        if i % 100 == 0:
+            print "i=",i
+            print "Test:", plot_test[-1]
+        
+            print "Train:", plot_train[-1]
+            print "Penalty:", sess.run(decay_penalty)
+        
+        
+            snapshot = {}
+            snapshot["W0"] = sess.run(W0)
+            snapshot["W1"] = sess.run(W1)
+            snapshot["b0"] = sess.run(b0)
+            snapshot["b1"] = sess.run(b1)
+            #cPickle.dump(snapshot,  open("new_snapshot"+str(i)+".pkl", "w"))
+            
+    try:
+        plt.figure()
+        plt.plot(plot_x, plot_train, '-g', label='Training')
+        plt.plot(plot_x, plot_vali, '-r', label='Validation')
+        plt.plot(plot_x, plot_test, '-b', label='Test')
+        plt.xlabel("Training Iterations")
+        plt.ylabel("Accuracy")
+        plt.title("Traning Curve for Single Hidden Layer NN, lam = {}".format(lam))
+        plt.legend(loc='bottom right')
+        plt.show()
+    except:
+        print("plot fail")
+        
+    print "Final test set accuracy:"
+    print (sess.run(accuracy, feed_dict={x: test_x, y_: test_y}))
+    
+    return sess, W0, b0, W1, b1
+        
+        
+    def p9(act_set, actors):    
+        
+        # Train and save network from part 7
+        sess, W0, b0, W1, b1 = p7_8(act_set, "sigmoid", 0.1, 2000, 360)
+        
+        for i in actors:
+            # Loop through each actor
+        
+        
         
 
 ## INIT CODE
@@ -452,97 +580,40 @@ if __name__ == "__main__":
     
     import tensorflow as tf
     
+    #p7_8(act_set, lam = 0.0, iter = 5000, nhid = 360, af):
     
-    # Changes:
-    #     input image size is 1024
-    #     training everything in one batch since the training set is realtively small
+    
+    p7_8(act_set, "sigmoid", 0.1, 2000, 360)   
+    
+    p7_8(act_set, "relu", 0.1, 3000, 360)       
+    p7_8(act_set, "relu", 1, 3000, 360)          
+    p7_8(act_set, "relu", 2, 3000, 360)      
+    p7_8(act_set, "relu", 3, 3000, 360)     
+    p7_8(act_set, "relu", 6.67, 3000, 360)     
+    p7_8(act_set, "relu", 10, 3000, 360)  
+    
+    p9
+    
         
-        
-    x = tf.placeholder(tf.float32, [None, 1024])
     
-    
-    nhid = 300
-    W0 = tf.Variable(tf.random_normal([1024, nhid], stddev=0.01))
-    b0 = tf.Variable(tf.random_normal([nhid], stddev=0.01))
-    
-    W1 = tf.Variable(tf.random_normal([nhid, 6], stddev=0.01))
-    b1 = tf.Variable(tf.random_normal([6], stddev=0.01))
-    
-    # snapshot = cPickle.load(open("snapshot50.pkl"))
-    # W0 = tf.Variable(snapshot["W0"])
-    # b0 = tf.Variable(snapshot["b0"])
-    # W1 = tf.Variable(snapshot["W1"])
-    # b1 = tf.Variable(snapshot["b1"])
-    
-    
-    layer1 = tf.nn.tanh(tf.matmul(x, W0)+b0)
-    layer2 = tf.matmul(layer1, W1)+b1
-    
-    
-    y = tf.nn.softmax(layer2)
-    y_ = tf.placeholder(tf.float32, [None, 6])
-    
-
-    lam = 0.001
-    decay_penalty =lam*tf.reduce_sum(tf.square(W0))+lam*tf.reduce_sum(tf.square(W1))
-    reg_NLL = -tf.reduce_sum(y_*tf.log(y))+decay_penalty    
-    train_step = tf.train.AdamOptimizer(0.0005).minimize(reg_NLL)
-    
-    init = tf.initialize_all_variables()
-    sess = tf.Session()
-    sess.run(init)
-    
-    correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    
-    train_x, train_y = get_train(act_set)
-    vali_x, vali_y = get_vali(act_set)
-    test_x, test_y = get_test(act_set)
-    
-    plot_x = []
-    plot_test = []
-    plot_train = []
-    plot_vali = []
-    
-    for i in range(5000):
-        #print i  
-        #batch_xs, batch_ys = get_train_batch(M, 500)
-        sess.run(train_step, feed_dict={x: train_x, y_: train_y})
-        
-        plot_test.append(sess.run(accuracy, feed_dict={x: test_x, y_: test_y}))
-        plot_train.append(sess.run(accuracy, feed_dict={x: train_x, y_: train_y}))
-        plot_vali.append(sess.run(accuracy, feed_dict={x: vali_x, y_: vali_y}))
-        plot_x.append(i)
-        
-        if i % 100 == 0:
-            print "i=",i
-            print "Test:", plot_test[-1]
-        
-            print "Train:", plot_train[-1]
-            print "Penalty:", sess.run(decay_penalty)
-        
-        
-            snapshot = {}
-            snapshot["W0"] = sess.run(W0)
-            snapshot["W1"] = sess.run(W1)
-            snapshot["b0"] = sess.run(b0)
-            snapshot["b1"] = sess.run(b1)
-            #cPickle.dump(snapshot,  open("new_snapshot"+str(i)+".pkl", "w"))
+    # for i in range(10):
+    #     square_theta = np.reshape(W0.eval(sess).T[i],(32,32))    
+    #     try:
+    #         plt.figure()
+    #         plt.imshow(square_theta, interpolation='sinc')
+    #         plt.title("Theta #:" + str(i))
+    #         plt.show()
+    #     except:
+    #         print("plot fail")
             
-    try:
-        plt.figure()
-        plt.plot(plot_x, plot_train, '-g', label='Training')
-        plt.plot(plot_x, plot_vali, '-r', label='Validation')
-        plt.plot(plot_x, plot_test, '-b', label='Test')
-        plt.xlabel("Training Iterations")
-        plt.ylabel("Accuracy")
-        plt.title("Traning Curve for Single Hidden Layer NN")
-        plt.legend(loc='bottom right')
-        plt.show()
-    except:
-        print("plot fail")
-
-    
-    
+        
+    # a = np.dot([0,1,0,0,0,0], W1.eval(sess).T)
+    # b = W0.eval(sess).T[np.argmax(a)]
+    # square_theta = np.reshape(b,(32,32))            
+    # plt.figure()
+    # plt.imshow(square_theta, interpolation='mitchell')
+    # plt.title("Theta Test")
+    # plt.show()
+    #     
     
     
