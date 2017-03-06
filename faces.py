@@ -515,20 +515,58 @@ def p7_8(act_set, af, lam = 0.0, iter = 5000, nhid = 360):
     return sess, W0, b0, W1, b1
         
         
-    def p9(act_set, actors):    
+def p9(act_set, actors):    
+    
+    # Train and save network from part 7
+    sess, W0t, b0t, W1t, b1t = p7_8(act_set, "sigmoid", 0.1, 2000, 360)
+    
+    W0 = W0t.eval(sess)        
+    W1 = W1t.eval(sess)        
+    b0 = b0t.eval(sess)        
+    b1 = b1t.eval(sess)
+    
+    w_out = []
+    
+    avg_size = 10
+    for i in range(6):
+        # Loop through each actor
+        wh = W1.T[i]  # Hidden unit weights that contribute to this actor
+        ws = 0
+        ct = 0
         
-        # Train and save network from part 7
-        sess, W0, b0, W1, b1 = p7_8(act_set, "sigmoid", 0.1, 2000, 360)
+        for j in range(avg_size):
+            # Loop x times and find the most influential weights
+            
+            # Find the largest weights
+            if abs(wh[np.argmax(wh)]) > abs(wh[np.argmin(wh)]):
+                ws += W0.T[np.argmax(wh)]
+                np.delete(wh,np.argmax(wh),0)
+            elif abs(wh[np.argmax(wh)]) <= abs(wh[np.argmin(wh)]):
+                ws -= W0.T[np.argmax(wh)]
+                np.delete(wh,np.argmin(wh),0)
+            else:
+                print("Unknown error, p9 loop")
+                continue
+            ct += 1
+
+        if ct == 0:
+            ct = 1j
+        weight = ws/ct
+        w_out.append(weight)
         
-        for i in actors:
-            # Loop through each actor
+        wsq = np.reshape(weight,(32,32))            
+        plt.figure()
+        plt.imshow(wsq, interpolation='mitchell', cmap='jet')
+        plt.title("Actor: {}, Avg Size: {}".format(act_set[i][0],avg_size))
+        plt.show()
+        
+            
         
         
         
 
 ## INIT CODE
 __name__ = "__main__"
-
 # Set log level, for convience, avaliable options are:
 # ALL, SHORT, INFO, WARNING, NONE
 log_level = "SHORT"
@@ -583,16 +621,16 @@ if __name__ == "__main__":
     #p7_8(act_set, lam = 0.0, iter = 5000, nhid = 360, af):
     
     
-    p7_8(act_set, "sigmoid", 0.1, 2000, 360)   
-    
-    p7_8(act_set, "relu", 0.1, 3000, 360)       
-    p7_8(act_set, "relu", 1, 3000, 360)          
-    p7_8(act_set, "relu", 2, 3000, 360)      
-    p7_8(act_set, "relu", 3, 3000, 360)     
-    p7_8(act_set, "relu", 6.67, 3000, 360)     
-    p7_8(act_set, "relu", 10, 3000, 360)  
-    
-    p9
+    # p7_8(act_set, "sigmoid", 0.1, 2000, 360)   
+    # 
+    # p7_8(act_set, "relu", 0.1, 3000, 360)       
+    # p7_8(act_set, "relu", 1, 3000, 360)          
+    # p7_8(act_set, "relu", 2, 3000, 360)      
+    # p7_8(act_set, "relu", 3, 3000, 360)     
+    # p7_8(act_set, "relu", 6.67, 3000, 360)     
+    # p7_8(act_set, "relu", 10, 3000, 360)  
+    # 
+    p9(act_set, 0);
     
         
     
