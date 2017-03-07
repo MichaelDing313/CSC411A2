@@ -13,17 +13,23 @@
 
 from numpy import *
 import os
-#from pylab import *
+from pylab import *
 import numpy as np
-#import matplotlib.pyplot as plt
-#import matplotlib.cbook as cbook
+import matplotlib.pyplot as plt
+import matplotlib.cbook as cbook
 import time
 from scipy.misc import imread
 from scipy.misc import imresize
+from scipy.misc import imsave
 import matplotlib.image as mpimg
 from scipy.ndimage import filters
 import urllib
 from numpy import random
+import hashlib
+import imghdr
+import shutil
+from matplotlib.pyplot import *
+import scipy
 
 
 import tensorflow as tf
@@ -41,12 +47,12 @@ ydim = train_y.shape[1]
 #Read Image, and change to BGR
 
 
-im1 = (imread("laska.png")[:,:,:3]).astype(float32)
-im1 = im1 - mean(im1)
-im1[:, :, 0], im1[:, :, 2] = im1[:, :, 2], im1[:, :, 0]
-
-im2 = (imread("poodle.png")[:,:,:3]).astype(float32)
-im2[:, :, 0], im2[:, :, 2] = im2[:, :, 2], im2[:, :, 0]
+# im1 = (imread("laska.png")[:,:,:3]).astype(float32)
+# im1 = im1 - mean(im1)
+# im1[:, :, 0], im1[:, :, 2] = im1[:, :, 2], im1[:, :, 0]
+# 
+# im2 = (imread("poodle.png")[:,:,:3]).astype(float32)
+# im2[:, :, 0], im2[:, :, 2] = im2[:, :, 2], im2[:, :, 0]
 
 
 ################################################################################
@@ -325,7 +331,15 @@ def alexify(in_set, source_folder):
     
     for j in in_set:
         
-        im1 = (imread(source_folder + j)[:,:,:3]).astype(float32)
+        try:
+            im1 = (imread(source_folder + j)[:,:,:3]).astype(float32)
+        except IndexError:
+            im1 = imread(source_folder + j)
+            w, h = im1.shape
+            ret = np.empty((w, h, 3), dtype=np.float32)
+            ret[:, :, 2] =  ret[:, :, 1] =  ret[:, :, 0] =  im1
+            im1 = ret
+            
         im1 = im1 - mean(im1)
         im1[:, :, 0], im1[:, :, 2] = im1[:, :, 2], im1[:, :, 0]
         
@@ -357,14 +371,14 @@ def get_train(id):
     train_y = vstack( (np.append(np.append(linspace(0,0, 4*ts), linspace(1,1, 1*ts)), linspace(0,0, 1*ts)), train_y))    # america = [0,0,0,0,1,0]
     train_y = vstack( (np.append(linspace(0,0, 5*ts), linspace(1,1, 1*ts)), train_y))    # fran = [0,0,0,0,0,1]
     
-    train_x = alexify(act_set[4][1],"resized_all/")          # Bill Hader
-    train_x = np.append(train_x, alexify(act_set[5][1],"resized_all/"), axis=0)    # Steve Carell
-    train_x = np.append(train_x, alexify(act_set[3][1],"resized_all/"), axis=0)    # Alec Baldwin
-    train_x = np.append(train_x, alexify(act_set[2][1],"resized_all/"), axis=0)    # Kristin Chenoweth
-    train_x = np.append(train_x, alexify(act_set[1][1],"resized_all/"), axis=0)    # America Ferrera
-    train_x = np.append(train_x, alexify(act_set[0][1],"resized_all/"), axis=0)    # Fran Drescher
+    train_x = alexify(act_set[4][1],"resized227_all/")          # Bill Hader
+    train_x = np.append(train_x, alexify(act_set[5][1],"resized227_all/"), axis=0)    # Steve Carell
+    train_x = np.append(train_x, alexify(act_set[3][1],"resized227_all/"), axis=0)    # Alec Baldwin
+    train_x = np.append(train_x, alexify(act_set[2][1],"resized227_all/"), axis=0)    # Kristin Chenoweth
+    train_x = np.append(train_x, alexify(act_set[1][1],"resized227_all/"), axis=0)    # America Ferrera
+    train_x = np.append(train_x, alexify(act_set[0][1],"resized227_all/"), axis=0)    # Fran Drescher
     
-    return train_x, train_y.T
+    return train_x.astype(float32), train_y.T.astype(float32)
 
 def get_vali(id):
     '''
@@ -387,14 +401,14 @@ def get_vali(id):
     train_y = vstack( (np.append(np.append(linspace(0,0, 4*ts), linspace(1,1, 1*ts)), linspace(0,0, 1*ts)), train_y))    # america = [0,0,0,0,1,0]
     train_y = vstack( (np.append(linspace(0,0, 5*ts), linspace(1,1, 1*ts)), train_y))    # fran = [0,0,0,0,0,1]
     
-    train_x = alexify(act_set[4][2],"resized_all/")          # Bill Hader
-    train_x = np.append(train_x, alexify(act_set[5][2],"resized_all/"), axis=0)    # Steve Carell
-    train_x = np.append(train_x, alexify(act_set[3][2],"resized_all/"), axis=0)    # Alec Baldwin
-    train_x = np.append(train_x, alexify(act_set[2][2],"resized_all/"), axis=0)    # Kristin Chenoweth
-    train_x = np.append(train_x, alexify(act_set[1][2],"resized_all/"), axis=0)    # America Ferrera
-    train_x = np.append(train_x, alexify(act_set[0][2],"resized_all/"), axis=0)    # Fran Drescher
+    train_x = alexify(act_set[4][2],"resized227_all/")          # Bill Hader
+    train_x = np.append(train_x, alexify(act_set[5][2],"resized227_all/"), axis=0)    # Steve Carell
+    train_x = np.append(train_x, alexify(act_set[3][2],"resized227_all/"), axis=0)    # Alec Baldwin
+    train_x = np.append(train_x, alexify(act_set[2][2],"resized227_all/"), axis=0)    # Kristin Chenoweth
+    train_x = np.append(train_x, alexify(act_set[1][2],"resized227_all/"), axis=0)    # America Ferrera
+    train_x = np.append(train_x, alexify(act_set[0][2],"resized227_all/"), axis=0)    # Fran Drescher
     
-    return train_x, train_y.T
+    return train_x.astype(float32), train_y.T.astype(float32)
     
 def get_test(id):
     '''
@@ -417,14 +431,14 @@ def get_test(id):
     train_y = vstack( (np.append(np.append(linspace(0,0, 4*ts), linspace(1,1, 1*ts)), linspace(0,0, 1*ts)), train_y))    # america = [0,0,0,0,1,0]
     train_y = vstack( (np.append(linspace(0,0, 5*ts), linspace(1,1, 1*ts)), train_y))    # fran = [0,0,0,0,0,1]
     
-    train_x = alexify(act_set[4][3],"resized_all/")          # Bill Hader
-    train_x = np.append(train_x, alexify(act_set[5][3],"resized_all/"), axis=0)    # Steve Carell
-    train_x = np.append(train_x, alexify(act_set[3][3],"resized_all/"), axis=0)    # Alec Baldwin
-    train_x = np.append(train_x, alexify(act_set[2][3],"resized_all/"), axis=0)    # Kristin Chenoweth
-    train_x = np.append(train_x, alexify(act_set[1][3],"resized_all/"), axis=0)    # America Ferrera
-    train_x = np.append(train_x, alexify(act_set[0][3],"resized_all/"), axis=0)    # Fran Drescher
+    train_x = alexify(act_set[4][3],"resized227_all/")          # Bill Hader
+    train_x = np.append(train_x, alexify(act_set[5][3],"resized227_all/"), axis=0)    # Steve Carell
+    train_x = np.append(train_x, alexify(act_set[3][3],"resized227_all/"), axis=0)    # Alec Baldwin
+    train_x = np.append(train_x, alexify(act_set[2][3],"resized227_all/"), axis=0)    # Kristin Chenoweth
+    train_x = np.append(train_x, alexify(act_set[1][3],"resized227_all/"), axis=0)    # America Ferrera
+    train_x = np.append(train_x, alexify(act_set[0][3],"resized227_all/"), axis=0)    # Fran Drescher
     
-    return train_x, train_y.T
+    return train_x.astype(float32), train_y.T.astype(float32)
 
 
 ### ALEX NET IS BELOW
@@ -565,60 +579,165 @@ conv4 = tf.nn.relu(conv4_in)
 
 
 ## INIT CODE
-__name__ = "__main__"
 # Set log level, for convience, avaliable options are:
 # ALL, SHORT, INFO, WARNING, NONE
 log_level = "SHORT"
 
-if __name__ == "__init__":
-    # Execution start here
-    
-    ## Part 1 Gather Data
-    # Download, filter, crop and resize images to be used
-    
-    
-    #uncomment all these code below to run entire process
-    files = ["facescrub_actors.txt","facescrub_actresses.txt"]
-    newfile = open('combined_face_scrub.txt', 'w')
-    newfile.write( ''.join([open(f).read() for f in files]))
-    newfile.close
-    
-    act = list(set([a.split("\t")[0] for a in open("combined_face_scrub.txt").readlines()]))
-    make_folders(('uncropped_all/','uncropped_all','cropped_all','grey_all','resized_all'))
-    fetch_image_URL_mod(act, "uncropped_all/","combined_face_scrub.txt","uncropped_all/0_subset_crop_info.txt")
-    crop_images(act, "uncropped_all/","cropped_all/","uncropped_all/0_subset_crop_info.txt","cropped_all/0_output_info.txt")
-    convert_grey(act, "cropped_all/","grey_all/","uncropped_all/0_subset_crop_info.txt")
-    resize_32x32(act, "grey_all/","resized_all/","cropped_all/0_output_info.txt","resized_all/0_set_info.txt")
-    
-    # end of init code
-    
-if __name__ == "__main__":
-    #t = int(time.time())
-    t = 1454219613
-    print "t=", t
-    random.seed(t)
-    
-    # Pick the data set to be used for each actor
-    
-    #Build actor list
-    act =['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    
-    act_set = pick_sets(act, "resized_all/0_set_info.txt")
-    print('actor order are:')
-    actor_order = []
-    count = 0
-    for i in act_set:
-        print(str(count) + ':' + i[0])
-        actor_order.append(i[0])
-        count += 1
-    print(actor_order)
+# Execution start here
 
+## Part 1 Gather Data
+# Download, filter, crop and resize images to be used
+
+
+#uncomment all these code below to run entire process
+files = ["facescrub_actors.txt","facescrub_actresses.txt"]
+newfile = open('combined_face_scrub.txt', 'w')
+newfile.write( ''.join([open(f).read() for f in files]))
+newfile.close
+
+act = list(set([a.split("\t")[0] for a in open("combined_face_scrub.txt").readlines()]))
+make_folders(('uncropped_all/','uncropped_all','cropped_all','grey_all','resized227_all'))
+fetch_image_URL_mod(act, "uncropped_all/","combined_face_scrub.txt","uncropped_all/0_subset_crop_info.txt")
+crop_images(act, "uncropped_all/","cropped_all/","uncropped_all/0_subset_crop_info.txt","cropped_all/0_output_info.txt")
+resize_227x227(act, "cropped_all/","resized227_all/","cropped_all/0_output_info.txt","resized227_all/0_set_info.txt")
+
+# end of init code
+
+
+
+#t = int(time.time())
+t = 1454219613
+print "t=", t
+random.seed(t)
+
+# Pick the data set to be used for each actor
+
+#Build actor list
+act =['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+
+act_set = pick_sets(act, "resized227_all/0_set_info.txt")
+print('actor order are:')
+actor_order = []
+count = 0
+for i in act_set:
+    print(str(count) + ':' + i[0])
+    actor_order.append(i[0])
+    count += 1
+print(actor_order)
+
+
+import tensorflow as tf
+
+init = tf.initialize_all_variables()
+sess = tf.Session()
+sess.run(init)
+
+
+train_x, train_y = get_train(act_set)
+vali_x, vali_y = get_vali(act_set)
+test_x, test_y = get_test(act_set)
+
+# Feed training set through conv4
+train_cv4 = np.empty((0, 13, 13, 384))
+# Use batches here to avoid resources exhausted error
+for i in range(36):
+    train_cv4 = np.append(train_cv4, sess.run(conv4, feed_dict = {x: train_x[i*10:(i+1)*10]}),axis=0)
     
-    import tensorflow as tf
+
+# Feed validation set through conv4
+vali_cv4 = np.empty((0, 13, 13, 384))
+vali_cv4 = np.append(vali_cv4, sess.run(conv4, feed_dict = {x: vali_x}),axis=0)
     
-    init = tf.initialize_all_variables()
-    sess = tf.Session()
-    sess.run(init)
+
+# Feed test set through conv4
+test_cv4 = np.empty((0, 13, 13, 384))
+# Use batches here to avoid resources exhausted error
+for i in range(18):
+    test_cv4 = np.append(test_cv4, sess.run(conv4, feed_dict = {x: test_x[i*10:(i+1)*10]}),axis=0)
     
-    train_x = get_train(act_set)
-    output = sess.run(conv4, feed_dict = {x:[train_x]})
+## WE ARE DONE WITH EXTRACTION OF CONV4, NOW MAKE A NEW NETWORK TO LEARN
+
+# Size of conv4 output is (13, 13, 384)
+cv4_out = tf.placeholder(tf.float32, (None,) + (13, 13, 384))
+
+nhid = 30
+W0 = tf.Variable(tf.random_normal((int(prod(cv4_out.get_shape()[1:])),)+ (nhid,), stddev=0.001, seed=411))
+b0 = tf.Variable(tf.random_normal([nhid], stddev=0.0001, seed=411))
+
+W1 = tf.Variable(tf.random_normal([nhid, 6], stddev=0.0001, seed=411))
+b1 = tf.Variable(tf.random_normal([6], stddev=0.0001, seed=411))
+
+# snapshot = cPickle.load(open("snapshot50.pkl"))
+# W0 = tf.Variable(snapshot["W0"])
+# b0 = tf.Variable(snapshot["b0"])
+# W1 = tf.Variable(snapshot["W1"])
+# b1 = tf.Variable(snapshot["b1"])
+
+layer1 = tf.nn.relu(tf.matmul(tf.reshape(cv4_out, [-1, int(prod(cv4_out.get_shape()[1:]))]), W0)+b0)
+layer2 = tf.matmul(layer1, W1)+b1
+
+
+y = tf.nn.softmax(layer2)
+y_ = tf.placeholder(tf.float32, [None, 6])
+
+
+lam = 0.0000001
+decay_penalty =lam*tf.reduce_sum(tf.square(W0))+lam*tf.reduce_sum(tf.square(W1))
+reg_NLL = -tf.reduce_sum(y_*tf.log(y))+decay_penalty    
+train_step = tf.train.AdamOptimizer(5e-5).minimize(reg_NLL)
+
+init = tf.initialize_all_variables()
+sess = tf.Session()
+sess.run(init)
+
+correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+plot_x = []
+plot_test = []
+plot_train = []
+plot_vali = []
+
+iter = 1000
+for i in range(iter):
+    #print i  
+    #batch_xs, batch_ys = get_train_batch(M, 500)
+    sess.run(train_step, feed_dict={cv4_out: train_cv4, y_: train_y})
+    
+    if i % 1 == 0:
+        plot_test.append(sess.run(accuracy, feed_dict={cv4_out: test_cv4, y_: test_y}))
+        plot_train.append(sess.run(accuracy, feed_dict={cv4_out: train_cv4, y_: train_y}))
+        plot_vali.append(sess.run(accuracy, feed_dict={cv4_out: vali_cv4, y_: vali_y}))
+        plot_x.append(i)
+    
+    if i % 10 == 0:
+        print "i=",i
+        print "Test:", plot_test[-1]
+    
+        print "Train:", plot_train[-1]
+        print "Penalty:", sess.run(decay_penalty)
+    
+    
+        snapshot = {}
+        snapshot["W0"] = sess.run(W0)
+        snapshot["W1"] = sess.run(W1)
+        snapshot["b0"] = sess.run(b0)
+        snapshot["b1"] = sess.run(b1)
+        #cPickle.dump(snapshot,  open("new_snapshot"+str(i)+".pkl", "w"))
+        
+try:
+    plt.figure()
+    plt.plot(plot_x, plot_train, '-g', label='Training')
+    plt.plot(plot_x, plot_vali, '-r', label='Validation')
+    plt.plot(plot_x, plot_test, '-b', label='Test')
+    plt.xlabel("Training Iterations")
+    plt.ylabel("Accuracy")
+    plt.title("Traning Curve for Single Hidden Layer NN")
+    plt.legend(loc='bottom right')
+    plt.show()
+except:
+    print("plot fail")
+    
+print "Final test set accuracy:"
+print (sess.run(accuracy, feed_dict={cv4_out: test_cv4, y_: test_y}))
+    
