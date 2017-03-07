@@ -565,93 +565,68 @@ def p9(act_set, avg_size = 10):
         
 
 ## INIT CODE
-__name__ = "__main__"
 # Set log level, for convience, avaliable options are:
 # ALL, SHORT, INFO, WARNING, NONE
 log_level = "SHORT"
 
-if __name__ == "__init__":
-    # Execution start here
-    
-    ## Part 1 Gather Data
-    # Download, filter, crop and resize images to be used
-    
-    
-    #uncomment all these code below to run entire process
-    files = ["facescrub_actors.txt","facescrub_actresses.txt"]
-    newfile = open('combined_face_scrub.txt', 'w')
-    newfile.write( ''.join([open(f).read() for f in files]))
-    newfile.close
-    
-    act = list(set([a.split("\t")[0] for a in open("combined_face_scrub.txt").readlines()]))
-    make_folders(('uncropped_all/','uncropped_all','cropped_all','grey_all','resized_all'))
-    fetch_image_URL_mod(act, "uncropped_all/","combined_face_scrub.txt","uncropped_all/0_subset_crop_info.txt")
-    crop_images(act, "uncropped_all/","cropped_all/","uncropped_all/0_subset_crop_info.txt","cropped_all/0_output_info.txt")
-    convert_grey(act, "cropped_all/","grey_all/","uncropped_all/0_subset_crop_info.txt")
-    resize_32x32(act, "grey_all/","resized_all/","cropped_all/0_output_info.txt","resized_all/0_set_info.txt")
-    
-    # end of init code
-    
-if __name__ == "__main__":
-    
-    #t = int(time.time())
-    t = 1454219613
-    print "t=", t
-    random.seed(t)
-    
-    # Pick the data set to be used for each actor
-    
-    #Build actor list
-    act =['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
-    
-    act_set = pick_sets(act, "resized_all/0_set_info.txt")
-    print('actor order are:')
-    actor_order = []
-    count = 0
-    for i in act_set:
-        print(str(count) + ':' + i[0])
-        actor_order.append(i[0])
-        count += 1
-    print(actor_order)
+# Execution start here
 
-    
-    import tensorflow as tf
-    
-    #p7_8(act_set, lam = 0.0, iter = 5000, nhid = 360, af):
-    
-    
-    # p7_8(act_set, "sigmoid", 0.1, 2000, 360)   
-    # 
-    # p7_8(act_set, "relu", 0.1, 3000, 360)       
-    # p7_8(act_set, "relu", 1, 3000, 360)          
-    # p7_8(act_set, "relu", 2, 3000, 360)      
-    # p7_8(act_set, "relu", 3, 3000, 360)     
-    # p7_8(act_set, "relu", 6.67, 3000, 360)     
-    # p7_8(act_set, "relu", 10, 3000, 360)  
-    # 
-    p9(act_set);
-    p9(act_set,1);
-    
-        
-    
-    # for i in range(10):
-    #     square_theta = np.reshape(W0.eval(sess).T[i],(32,32))    
-    #     try:
-    #         plt.figure()
-    #         plt.imshow(square_theta, interpolation='sinc')
-    #         plt.title("Theta #:" + str(i))
-    #         plt.show()
-    #     except:
-    #         print("plot fail")
-            
-        
-    # a = np.dot([0,1,0,0,0,0], W1.eval(sess).T)
-    # b = W0.eval(sess).T[np.argmax(a)]
-    # square_theta = np.reshape(b,(32,32))            
-    # plt.figure()
-    # plt.imshow(square_theta, interpolation='mitchell')
-    # plt.title("Theta Test")
-    # plt.show()
-    #     
-    
+## Part 1 Gather Data
+# Download, filter, crop and resize images to be used
+
+
+#uncomment all these code below to run entire process
+files = ["facescrub_actors.txt","facescrub_actresses.txt"]
+newfile = open('combined_face_scrub.txt', 'w')
+newfile.write( ''.join([open(f).read() for f in files]))
+newfile.close
+
+act = list(set([a.split("\t")[0] for a in open("combined_face_scrub.txt").readlines()]))
+make_folders(('uncropped_all/','uncropped_all','cropped_all','grey_all','resized_all'))
+fetch_image_URL_mod(act, "uncropped_all/","combined_face_scrub.txt","uncropped_all/0_subset_crop_info.txt")
+crop_images(act, "uncropped_all/","cropped_all/","uncropped_all/0_subset_crop_info.txt","cropped_all/0_output_info.txt")
+convert_grey(act, "cropped_all/","grey_all/","uncropped_all/0_subset_crop_info.txt")
+resize_32x32(act, "grey_all/","resized_all/","cropped_all/0_output_info.txt","resized_all/0_set_info.txt")
+
+# end of init code
+
+#t = int(time.time())
+t = 1454219613
+print "t=", t
+random.seed(t)
+
+# Pick the data set to be used for each actor
+
+#Build actor list
+act =['Fran Drescher', 'America Ferrera', 'Kristin Chenoweth', 'Alec Baldwin', 'Bill Hader', 'Steve Carell']
+
+act_set = pick_sets(act, "resized_all/0_set_info.txt")
+print('actor order are:')
+actor_order = []
+count = 0
+for i in act_set:
+    print(str(count) + ':' + i[0])
+    actor_order.append(i[0])
+    count += 1
+print(actor_order)
+
+
+import tensorflow as tf
+
+#p7_8(act_set, lam = 0.0, iter = 5000, nhid = 360, af):
+
+
+p7_8(act_set, "sigmoid", 0, 2000, 360)   
+
+p7_8(act_set, "relu", 0.1, 3000, 360)       
+p7_8(act_set, "relu", 1, 3000, 360)          
+p7_8(act_set, "relu", 2, 3000, 360)      
+p7_8(act_set, "relu", 3, 3000, 360)     
+p7_8(act_set, "relu", 6.67, 3000, 360)     
+p7_8(act_set, "relu", 10, 3000, 360)  
+
+p9(act_set);
+p9(act_set,1);
+
+
     
