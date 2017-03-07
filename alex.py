@@ -13,10 +13,10 @@
 
 from numpy import *
 import os
-from pylab import *
+#from pylab import *
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.cbook as cbook
+#import matplotlib.pyplot as plt
+#import matplotlib.cbook as cbook
 import time
 from scipy.misc import imread
 from scipy.misc import imresize
@@ -67,8 +67,8 @@ im2[:, :, 0], im2[:, :, 2] = im2[:, :, 2], im2[:, :, 0]
 #         .softmax(name='prob'))
 
 #In Python 3.5, change this to:
-#net_data = load(open("bvlc_alexnet.npy", "rb"), encoding="latin1").item()
-net_data = load("bvlc_alexnet.npy").item()
+net_data = load(open("bvlc_alexnet.npy", "rb"), encoding="latin1").item()
+#net_data = load("bvlc_alexnet.npy").item()
 
 def conv(input, kernel, biases, k_h, k_w, c_o, s_h, s_w,  padding="VALID", group=1):
     '''From https://github.com/ethereon/caffe-tensorflow
@@ -82,10 +82,10 @@ def conv(input, kernel, biases, k_h, k_w, c_o, s_h, s_w,  padding="VALID", group
     if group==1:
         conv = convolve(input, kernel)
     else:
-        input_groups = tf.split(3, group, input)
-        kernel_groups = tf.split(3, group, kernel)
+        input_groups =  tf.split(input, group, 3)   #tf.split(3, group, input)
+        kernel_groups = tf.split(kernel, group, 3)  #tf.split(3, group, kernel) 
         output_groups = [convolve(i, k) for i,k in zip(input_groups, kernel_groups)]
-        conv = tf.concat(3, output_groups)
+        conv = tf.concat(output_groups, 3)          #tf.concat(3, output_groups)
     return  tf.reshape(tf.nn.bias_add(conv, biases), [-1]+conv.get_shape().as_list()[1:])
 
 
@@ -205,8 +205,8 @@ output = sess.run(prob, feed_dict = {x:[im1,im2]})
 
 for input_im_ind in range(output.shape[0]):
     inds = argsort(output)[input_im_ind,:]
-    print "Image", input_im_ind
+    print("Image", input_im_ind)
     for i in range(5):
-        print class_names[inds[-1-i]], output[input_im_ind, inds[-1-i]]
+        print(class_names[inds[-1-i]], output[input_im_ind, inds[-1-i]])
 
-print time.time()-t
+print(time.time()-t)
